@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Aleksey Anikeev aka AgentChe
@@ -28,6 +29,11 @@ public class PersonDAO {
     public List<Person> index() {
         return jdbcTemplate.query("SELECT * FROM person", new BeanPropertyRowMapper<>(Person.class));
 
+    }
+
+    public Optional<Person> show(String email) {
+        return jdbcTemplate.query("SELECT * FROM Person WHERE email =?", new Object[]{email},
+                new BeanPropertyRowMapper<>(Person.class)).stream().findAny();
     }
 
     public Person show(int id) {
@@ -55,7 +61,7 @@ public class PersonDAO {
     public void testMultipleUpdate() {
         List<Person> people = create1000Person();
         long before = System.currentTimeMillis();
-        for(Person person : people){
+        for (Person person : people) {
             jdbcTemplate.update("INSERT INTO Person VALUES (?,?,?,?)", person.getId(), person.getName(), person.getAge(), person.getEmail());
         }
         long after = System.currentTimeMillis();
@@ -85,15 +91,16 @@ public class PersonDAO {
         System.out.println("Time: " + (after - before));
     }
 
-    public void cleanBD(){
+    public void cleanBD() {
         for (int i = 0; i < 1000; i++) {
             jdbcTemplate.update("DELETE  FROM Person WHERE id=?", i);
         }
     }
+
     private List<Person> create1000Person() {
         List<Person> result = new ArrayList<>();
         for (int i = 0; i < 1000; i++) {
-            result.add(new Person(i,"Name" + i, 30, "test" + i + "@mail.ru"));
+            result.add(new Person(i, "Name" + i, 30, "test" + i + "@mail.ru"));
         }
         return result;
     }
